@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		928A93E02DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 928A93DE2DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodeld */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		928A93B82DA3D725003DA8B5 /* HabbitTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabbitTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		928A93DF2DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HabbitTrackerDataModel.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -45,6 +50,7 @@
 		928A93AF2DA3D725003DA8B5 = {
 			isa = PBXGroup;
 			children = (
+				928A93DE2DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodeld */,
 				928A93BA2DA3D725003DA8B5 /* HabbitTracker */,
 				928A93B92DA3D725003DA8B5 /* Products */,
 			);
@@ -132,6 +138,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				928A93E02DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,6 +342,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		928A93DE2DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				928A93DF2DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodel */,
+			);
+			currentVersion = 928A93DF2DA51623003DA8B5 /* HabbitTrackerDataModel.xcdatamodel */;
+			path = HabbitTrackerDataModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 928A93B02DA3D725003DA8B5 /* Project object */;
 }
