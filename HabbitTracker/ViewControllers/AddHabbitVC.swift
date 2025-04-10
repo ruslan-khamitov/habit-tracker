@@ -19,6 +19,8 @@ class AddHabbitVC: UIViewController {
     let colorSubject = CurrentValueSubject<HabbitColors, Never>(.red)
     var habbitName = ""
     
+    let habbitsInteractor = AppContainer.habbitsInteractor
+    
     init() {
         colorPicker = HabbitColorPicker(selectedColor: colorSubject)
         super.init(nibName: nil, bundle: nil)
@@ -115,15 +117,7 @@ class AddHabbitVC: UIViewController {
         let delegate = UIApplication.shared.delegate as! AppDelegate
         let ctx = delegate.persistentContainer.viewContext
         
-        let habbit = Habbit(context: ctx)
-        habbit.name = habbitName
-        habbit.color = colorSubject.value.rawValue
-        
-        do {
-            try ctx.save()
-        } catch {
-            // TODO: add handling
-        }
+        habbitsInteractor.saveHabbit(withName: habbitName, andColor: colorSubject.value)
         
         dismiss(animated: true)
     }
