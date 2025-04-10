@@ -26,4 +26,6 @@ enum HabbitColors: String {
         case .purple: return .systemPurple
         }
     }
+    
+    static let defaultColor: HabbitColors = .green
 }

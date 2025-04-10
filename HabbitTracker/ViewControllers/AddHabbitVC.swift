@@ -8,12 +8,18 @@
 import UIKit
 import Combine
 
+protocol AddHabbitVCDelegate: AnyObject {
+    func onAddHabbitDismiss() -> Void
+}
+
 class AddHabbitVC: UIViewController {
     // Components
     let titleComponent = UILabel()
     let textField = UITextField()
     var colorPicker: HabbitColorPicker!
     let button = UIButton()
+    
+    weak var delegate: AddHabbitVCDelegate?
 
     // State
     let colorSubject = CurrentValueSubject<HabbitColors, Never>(.red)
@@ -37,6 +43,11 @@ class AddHabbitVC: UIViewController {
         stylize()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        delegate?.onAddHabbitDismiss()
+    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
