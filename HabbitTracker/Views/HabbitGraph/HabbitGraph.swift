@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol HabbitGraphDelegate: AnyObject {
+    func navigateTo(habbit: HabbitVM) -> Void
+}
+
 class HabbitGraph: UICollectionViewCell {
     enum Section {
         case main
@@ -14,23 +18,40 @@ class HabbitGraph: UICollectionViewCell {
     
     static let reuseId = "HabbitGraph"
 
+    // Components
     var title = UILabel()
+    var seeButton = UIButton()
+    var stack = UIStackView()
     var collectionView: UICollectionView!
+    
     var dataSource: UICollectionViewDiffableDataSource<Section, DayVM>!
     
+    // State
+    var habbit: HabbitVM? = nil
     var trackedColor = HabbitColors.defaultColor
+    
+    weak var delegate: HabbitGraphDelegate? = nil
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        configureCollectionView()
-        configureCollectionViewDataSource()
+        configureComponents()
         configureSubviews()
         stylize()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func configureComponents() {
+        configureCollectionView()
+        configureCollectionViewDataSource()
+        
+        let action = UIAction { [weak self] _ in
+            self?.onSeeMoreTapped()
+        }
+        seeButton.addAction(action, for: .touchUpInside)
     }
     
     private func configureCollectionView() {
@@ -94,9 +115,19 @@ class HabbitGraph: UICollectionViewCell {
     private func configureSubviews() {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         title.translatesAutoresizingMaskIntoConstraints = false
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        seeButton.translatesAutoresizingMaskIntoConstraints = false
         
-        addSubview(title)
+        
+        addSubview(stack)
         addSubview(collectionView)
+        
+        // Stack
+        stack.addArrangedSubview(title)
+        stack.addArrangedSubview(seeButton)
+        stack.axis = .horizontal
+        stack.distribution = .fill
+        stack.alignment = .center
         
         let padding: CGFloat = 12
         
@@ -106,21 +137,21 @@ class HabbitGraph: UICollectionViewCell {
         
         NSLayoutConstraint.activate(
             [
-                title.topAnchor
+                stack.topAnchor
                     .constraint(
                         equalTo: topAnchor,
                         constant: paddingBetweenTitle
                     ),
-                title.leadingAnchor
+                stack.leadingAnchor
                     .constraint(equalTo: leadingAnchor, constant: padding),
-                title.trailingAnchor
+                stack.trailingAnchor
                     .constraint(equalTo: trailingAnchor, constant: -padding),
-                title.heightAnchor.constraint(equalToConstant: titleHeight),
+                stack.heightAnchor.constraint(equalToConstant: titleHeight),
             
             
                 collectionView.topAnchor
                     .constraint(
-                        equalTo: title.bottomAnchor,
+                        equalTo: stack.bottomAnchor,
                         constant: paddingBetweenTitle
                     ),
                 collectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -130,6 +161,8 @@ class HabbitGraph: UICollectionViewCell {
                     .constraint(
                         equalToConstant: graphPartHeight
                     ),
+                
+                seeButton.widthAnchor.constraint(equalToConstant: 85)
             ]
         )
     }
@@ -137,6 +170,7 @@ class HabbitGraph: UICollectionViewCell {
     public func set(habbit: HabbitVM) {
         title.text = habbit.name
         trackedColor = habbit.color
+        self.habbit = habbit
         
         let calendar = Calendar.current
         let today = Date()
@@ -170,5 +204,24 @@ class HabbitGraph: UICollectionViewCell {
     private func stylize() {
         backgroundColor = .systemBackground
         title.font = UIFont.preferredFont(forTextStyle: .title1)
+        
+        var configuration = UIButton.Configuration.borderless()
+        configuration.baseForegroundColor = .systemBlue
+        configuration.title = "See"
+        configuration.image = UIImage(systemName: "chevron.right")
+        configuration.imagePlacement = .trailing
+        configuration.imagePadding = 8
+        
+        seeButton.configuration = configuration
+    }
+    
+    private func onSeeMoreTapped() {
+        guard let habbit else { return }
+        
+        delegate?.navigateTo(habbit: habbit)
+    }
+    
+    public func setSeeMoreVisibility(to isVisible: Bool) {
+        seeButton.isHidden = !isVisible
     }
 }

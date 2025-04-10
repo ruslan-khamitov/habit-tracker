@@ -46,7 +46,9 @@ class MainPageVC: UIViewController {
     private func configureDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, HabbitVM>(collectionView: habbitCollection, cellProvider: { (cv, indexPath, habbit) in
             let cell = cv.dequeueReusableCell(withReuseIdentifier: HabbitGraph.reuseId, for: indexPath) as! HabbitGraph
+            cell.setSeeMoreVisibility(to: true)
             cell.set(habbit: habbit)
+            cell.delegate = self
             return cell
         })
     }
@@ -120,7 +122,6 @@ class MainPageVC: UIViewController {
     
     private func fetchHabbits() {
         let habbits = AppContainer.habbitsInteractor.fetchHabbits()
-        print(habbits)
         updateData(habbits: habbits)
     }
     
@@ -134,5 +135,12 @@ class MainPageVC: UIViewController {
 extension MainPageVC: AddHabbitVCDelegate {
     func onAddHabbitDismiss() {
         fetchHabbits()
+    }
+}
+
+extension MainPageVC: HabbitGraphDelegate {
+    func navigateTo(habbit: HabbitVM) {
+        let vc = HabbitVC(habbit: habbit)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
