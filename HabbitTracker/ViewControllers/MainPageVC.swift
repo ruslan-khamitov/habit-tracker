@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainPageVC.swift
 //  HabbitTracker
 //
 //  Created by Ruslan Khamitov on 07.04.2025.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class MainPageVC: UIViewController {
     
     let habbitGraph = HabbitGraph()
 
@@ -16,6 +16,9 @@ class ViewController: UIViewController {
         
         configureSubviews()
         stylize()
+        
+        let vc = AddHabbitVC()
+        present(vc, animated: true)
     }
 
     private func configureSubviews() {
