@@ -20,37 +20,31 @@ class HabbitsInteractor: ObservableObject {
         let fetchResult = repository.fetchHabbits()
         
         do {
-            let result: [HabbitVM] = try fetchResult.get().compactMap { habbit in
-                guard let name = habbit.name,
-                      let color = habbit.color else { return nil }
-                
-                var vm = HabbitVM(name: name, color: color, habbit: habbit)
-                
-                guard let trackedSet = habbit.tracked as? Set<TrackedDays> else {
-                    return vm
-                }
-                
-                for tracked in trackedSet {
-                    if let date = tracked.date {
-                        vm.trackedDays.append(DayVM(date: date, trackedDay: tracked))
-                    }
-                }
-            
-                return vm
+            let result: [HabbitVM] = try fetchResult.get().compactMap {
+                HabbitHelper.parseHabitVMfromCoreData($0)
             }
             
             self.habbits = result
             
             return result
         } catch {
-            // TODO: add warning
+            // TODO: add handling
             
             return []
         }
     }
     
     func saveHabbit(withName name: String, andColor color: HabbitColors) {
-        _ = repository.save(withName: name, color: color)
+        let saveResult = repository.save(withName: name, color: color)
+        do {
+            let savedHabbit = try saveResult.get()
+            let parsed = HabbitHelper.parseHabitVMfromCoreData(savedHabbit)
+            if let parsedHabbit = parsed {
+                habbits.append(parsedHabbit)
+            }
+        } catch {
+            // TODO: add handling
+        }
     }
     
     func refetchHabbit(habbit: HabbitVM) -> HabbitVM? {
@@ -60,30 +54,13 @@ class HabbitsInteractor: ObservableObject {
             return nil
         }
             
-        guard let name = fetched.name, let color = fetched.color else {
+        guard let vm = HabbitHelper.parseHabitVMfromCoreData(fetched) else {
             return nil
         }
-        
-        var vm = HabbitVM(name: name, color: color, habbit: fetched)
         
         let index = self.habbits.firstIndex { habbitVM in
             habbitVM.habbitCoreData.objectID == fetched.objectID
         }
-        
-        guard let trackedDays = fetched.tracked as? Set<TrackedDays> else {
-            if let index = index {
-                self.habbits[index] = vm
-            }
-            
-            return vm
-        }
-        
-        for trackedDay in trackedDays {
-            if let date = trackedDay.date {
-                vm.trackedDays.append(DayVM(date: date, trackedDay: trackedDay))
-            }
-        }
-        
         if let index = index {
             self.habbits[index] = vm
         }
@@ -92,9 +69,13 @@ class HabbitsInteractor: ObservableObject {
     
     func remove(habbit: HabbitVM) {
         let result = repository.delete(habbit: habbit.habbitCoreData)
-        _ = result.map({
-            self.habbits = self.habbits.filter { $0.habbitCoreData.objectID != habbit.habbitCoreData.objectID }
-        })
+        _ = result.map(
+{
+            self.habbits = self.habbits
+        .filter {
+            $0.habbitCoreData.objectID != habbit.habbitCoreData.objectID
+        }
+})
     }
     
     // Tracking days

@@ -125,9 +125,6 @@ class AddHabbitVC: UIViewController {
     }
     
     private func addNewHabbit() {
-        let delegate = UIApplication.shared.delegate as! AppDelegate
-        let ctx = delegate.persistentContainer.viewContext
-        
         habbitsInteractor.saveHabbit(withName: habbitName, andColor: colorSubject.value)
         
         dismiss(animated: true)
