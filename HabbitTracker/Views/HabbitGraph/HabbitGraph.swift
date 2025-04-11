@@ -7,21 +7,12 @@
 
 import UIKit
 
-protocol HabbitGraphDelegate: AnyObject {
-    func navigateTo(habbit: HabbitVM) -> Void
-}
-
-class HabbitGraph: UICollectionViewCell {
+class HabbitGraph: UIView {
     enum Section {
         case main
     }
-    
-    static let reuseId = "HabbitGraph"
 
     // Components
-    var title = UILabel()
-    var seeButton = UIButton()
-    var stack = UIStackView()
     var collectionView: UICollectionView!
     
     var dataSource: UICollectionViewDiffableDataSource<Section, DayVM>!
@@ -29,8 +20,6 @@ class HabbitGraph: UICollectionViewCell {
     // State
     var habbit: HabbitVM? = nil
     var trackedColor = HabbitColors.defaultColor
-    
-    weak var delegate: HabbitGraphDelegate? = nil
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -47,11 +36,6 @@ class HabbitGraph: UICollectionViewCell {
     private func configureComponents() {
         configureCollectionView()
         configureCollectionViewDataSource()
-        
-        let action = UIAction { [weak self] _ in
-            self?.onSeeMoreTapped()
-        }
-        seeButton.addAction(action, for: .touchUpInside)
     }
     
     private func configureCollectionView() {
@@ -114,20 +98,8 @@ class HabbitGraph: UICollectionViewCell {
     
     private func configureSubviews() {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        title.translatesAutoresizingMaskIntoConstraints = false
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        seeButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        
-        addSubview(stack)
         addSubview(collectionView)
         
-        // Stack
-        stack.addArrangedSubview(title)
-        stack.addArrangedSubview(seeButton)
-        stack.axis = .horizontal
-        stack.distribution = .fill
-        stack.alignment = .center
         
         let padding: CGFloat = 12
         
@@ -137,22 +109,9 @@ class HabbitGraph: UICollectionViewCell {
         
         NSLayoutConstraint.activate(
             [
-                stack.topAnchor
-                    .constraint(
-                        equalTo: topAnchor,
-                        constant: paddingBetweenTitle
-                    ),
-                stack.leadingAnchor
-                    .constraint(equalTo: leadingAnchor, constant: padding),
-                stack.trailingAnchor
-                    .constraint(equalTo: trailingAnchor, constant: -padding),
-                stack.heightAnchor.constraint(equalToConstant: titleHeight),
-            
-            
                 collectionView.topAnchor
                     .constraint(
-                        equalTo: stack.bottomAnchor,
-                        constant: paddingBetweenTitle
+                        equalTo: topAnchor,
                     ),
                 collectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
                 collectionView.trailingAnchor
@@ -161,14 +120,11 @@ class HabbitGraph: UICollectionViewCell {
                     .constraint(
                         equalToConstant: graphPartHeight
                     ),
-                
-                seeButton.widthAnchor.constraint(equalToConstant: 85)
             ]
         )
     }
     
     public func set(habbit: HabbitVM) {
-        title.text = habbit.name
         trackedColor = habbit.color
         self.habbit = habbit
         
@@ -203,25 +159,6 @@ class HabbitGraph: UICollectionViewCell {
     
     private func stylize() {
         backgroundColor = .systemBackground
-        title.font = UIFont.preferredFont(forTextStyle: .title1)
-        
-        var configuration = UIButton.Configuration.borderless()
-        configuration.baseForegroundColor = .systemBlue
-        configuration.title = "See"
-        configuration.image = UIImage(systemName: "chevron.right")
-        configuration.imagePlacement = .trailing
-        configuration.imagePadding = 8
-        
-        seeButton.configuration = configuration
     }
-    
-    private func onSeeMoreTapped() {
-        guard let habbit else { return }
-        
-        delegate?.navigateTo(habbit: habbit)
-    }
-    
-    public func setSeeMoreVisibility(to isVisible: Bool) {
-        seeButton.isHidden = !isVisible
-    }
+
 }

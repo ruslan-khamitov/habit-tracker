@@ -41,13 +41,12 @@ class MainPageVC: UIViewController {
             frame: .zero,
             collectionViewLayout: layout
         )
-        habbitCollection?.register(HabbitGraph.self, forCellWithReuseIdentifier: HabbitGraph.reuseId)
+        habbitCollection?.register(HabbitGraphMainPageCell.self, forCellWithReuseIdentifier: HabbitGraphMainPageCell.reuseId)
     }
     
     private func configureDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Section, HabbitVM>(collectionView: habbitCollection, cellProvider: { (cv, indexPath, habbit) in
-            let cell = cv.dequeueReusableCell(withReuseIdentifier: HabbitGraph.reuseId, for: indexPath) as! HabbitGraph
-            cell.setSeeMoreVisibility(to: true)
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: HabbitGraphMainPageCell.reuseId, for: indexPath) as! HabbitGraphMainPageCell
             cell.set(habbit: habbit)
             cell.delegate = self
             return cell
@@ -147,7 +146,7 @@ extension MainPageVC: AddHabbitVCDelegate {
     }
 }
 
-extension MainPageVC: HabbitGraphDelegate {
+extension MainPageVC: HabbitGraphMainPageCellDelegate {
     func navigateTo(habbit: HabbitVM) {
         let vc = HabbitVC(habbit: habbit)
         navigationController?.pushViewController(vc, animated: true)

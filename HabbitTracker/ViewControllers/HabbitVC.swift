@@ -63,8 +63,6 @@ class HabbitVC: UIViewController {
     }
     
     private func configureComponents() {
-        graph.setSeeMoreVisibility(to: false)
-        
         let toggleAction = UIAction { [weak self] _ in
             self?.toggleToday()
         }
