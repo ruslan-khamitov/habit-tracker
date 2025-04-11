@@ -90,7 +90,12 @@ class HabbitsInteractor: ObservableObject {
         return vm
     }
     
-    
+    func remove(habbit: HabbitVM) {
+        let result = repository.delete(habbit: habbit.habbitCoreData)
+        _ = result.map({
+            self.habbits = self.habbits.filter { $0.habbitCoreData.objectID != habbit.habbitCoreData.objectID }
+        })
+    }
     
     // Tracking days
     private func track(day: DayVM, forHabbit habbit: Habbit) {
