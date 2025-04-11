@@ -106,6 +106,8 @@ class MainPageVC: UIViewController {
     }
     
     private func stylize() {
+        navigationItem.title = "Habbits"
+        
         view.backgroundColor = .systemBackground
         
         addHabbitContainer.backgroundColor = .systemGray6

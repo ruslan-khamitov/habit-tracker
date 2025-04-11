@@ -43,6 +43,20 @@ class CoreDataHabbitsRepository: HabbitsRepository {
         }
     }
     
+    func fetchHabbit(habbit: Habbit) -> Habbit? {
+        do {
+            let result = try ctx.existingObject(with: habbit.objectID) as? Habbit
+            
+            guard let result else {
+                return nil
+            }
+            
+            return result
+        } catch {
+            return nil
+        }
+    }
+    
     func save(withName name: String, color: HabbitColors) -> Result<Habbit, any Error> {
         do {
             let habbit = Habbit(context: ctx)
@@ -52,6 +66,32 @@ class CoreDataHabbitsRepository: HabbitsRepository {
             try ctx.save()
             
             return .success(habbit)
+        } catch {
+            return .failure(error)
+        }
+    }
+    
+    func track(day: Date, forHabbit habbit: Habbit) -> Result<TrackedDays, any Error> {
+        do {
+            let trackedDay = TrackedDays(context: ctx)
+            trackedDay.habbit = habbit
+            trackedDay.date = day
+            
+            try ctx.save()
+            
+            return .success(trackedDay)
+        } catch {
+            return .failure(error)
+        }
+    }
+    
+    func untrack(day: TrackedDays) -> Result<Void, any Error> {
+        do {
+            ctx.delete(day)
+            
+            try ctx.save()
+            
+            return .success(())
         } catch {
             return .failure(error)
         }

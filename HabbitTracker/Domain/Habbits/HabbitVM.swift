@@ -12,8 +12,11 @@ struct HabbitVM: Identifiable, Hashable {
     var id: UUID = UUID()
     var trackedDays: [DayVM] = []
     
-    init(name: String, color: String) {
+    var habbitCoreData: Habbit
+    
+    init(name: String, color: String, habbit: Habbit) {
         self.name = name
+        self.habbitCoreData = habbit
         
         let parsedColor = HabbitColors(rawValue: color)
         guard let parsedColor else {

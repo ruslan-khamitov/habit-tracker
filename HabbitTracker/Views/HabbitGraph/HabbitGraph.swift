@@ -176,8 +176,8 @@ class HabbitGraph: UICollectionViewCell {
         let today = Date()
         
         var dates: [DayVM] = []
-        var dateOffset = -364
-        while dateOffset < 0 {
+        var dateOffset = -363
+        while dateOffset <= 0 {
             if let dateFromPastYear = calendar.date(
                 byAdding: .day,
                 value:-dateOffset,
@@ -191,7 +191,7 @@ class HabbitGraph: UICollectionViewCell {
                 if let trackedDate = trackedDate {
                     dates.append(trackedDate)
                 } else {
-                    dates.append(DayVM(date: untrackedDate, tracked: false))
+                    dates.append(DayVM(date: untrackedDate, trackedDay: nil))
                 }
                 
                 dateOffset += 1

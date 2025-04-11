@@ -11,5 +11,14 @@ struct DayVM: Identifiable, Hashable {
     let date: Date
     let id = UUID()
     
-    let tracked: Bool
+    var trackedDay: TrackedDays? = nil
+    
+    var tracked: Bool {
+        trackedDay != nil
+    }
+    
+    func getStartOfDay() -> Date {
+        let calendar = Calendar.current
+        return calendar.startOfDay(for: date)
+    }
 }
