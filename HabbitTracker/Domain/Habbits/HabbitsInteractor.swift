@@ -4,11 +4,13 @@
 //
 //  Created by Ruslan Khamitov on 10.04.2025.
 //
+import Foundation
+import Combine
 
-class HabbitsInteractor {
+class HabbitsInteractor: ObservableObject {
     private let repository: HabbitsRepository
     
-    var habbits: [Habbit] = []
+    @Published var habbits: [HabbitVM] = []
     
     init(repository: HabbitsRepository) {
         self.repository = repository
@@ -18,27 +20,28 @@ class HabbitsInteractor {
         let fetchResult = repository.fetchHabbits()
         
         do {
-            let result = try fetchResult.get()
-            self.habbits = result
-            
-            return result.compactMap { habbit in
+            let result: [HabbitVM] = try fetchResult.get().compactMap { habbit in
                 guard let name = habbit.name,
-                      let color = habbit.color else {
-                    return nil
-                }
+                      let color = habbit.color else { return nil }
                 
                 var vm = HabbitVM(name: name, color: color, habbit: habbit)
                 
-                if let trackedSet = habbit.tracked as? Set<TrackedDays> {
-                    for tracked in trackedSet {
-                        if let date = tracked.date {
-                            vm.trackedDays.append(DayVM(date: date, trackedDay: tracked))
-                        }
-                    }
+                guard let trackedSet = habbit.tracked as? Set<TrackedDays> else {
+                    return vm
                 }
                 
+                for tracked in trackedSet {
+                    if let date = tracked.date {
+                        vm.trackedDays.append(DayVM(date: date, trackedDay: tracked))
+                    }
+                }
+            
                 return vm
             }
+            
+            self.habbits = result
+            
+            return result
         } catch {
             // TODO: add warning
             
@@ -63,14 +66,27 @@ class HabbitsInteractor {
         
         var vm = HabbitVM(name: name, color: color, habbit: fetched)
         
-        if let trackedDays = fetched.tracked as? Set<TrackedDays> {
-            for trackedDay in trackedDays {
-                if let date = trackedDay.date {
-                    vm.trackedDays.append(DayVM(date: date, trackedDay: trackedDay))
-                }
+        let index = self.habbits.firstIndex { habbitVM in
+            habbitVM.habbitCoreData.objectID == fetched.objectID
+        }
+        
+        guard let trackedDays = fetched.tracked as? Set<TrackedDays> else {
+            if let index = index {
+                self.habbits[index] = vm
+            }
+            
+            return vm
+        }
+        
+        for trackedDay in trackedDays {
+            if let date = trackedDay.date {
+                vm.trackedDays.append(DayVM(date: date, trackedDay: trackedDay))
             }
         }
         
+        if let index = index {
+            self.habbits[index] = vm
+        }
         return vm
     }
     

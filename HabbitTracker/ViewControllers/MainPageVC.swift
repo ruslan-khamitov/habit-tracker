@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class MainPageVC: UIViewController {
     enum Section {
@@ -18,14 +19,14 @@ class MainPageVC: UIViewController {
     var habbitCollection: UICollectionView!
     var dataSource: UICollectionViewDiffableDataSource<Section,HabbitVM>!
     
+    var cancellables = Set<AnyCancellable>()
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        configureCollectionView()
-        configureDataSource()
-        configureSubviews()
         configureComponents()
+        configureSubviews()
         stylize()
         fetchHabbits()
     }
@@ -98,6 +99,9 @@ class MainPageVC: UIViewController {
     }
     
     private func configureComponents() {
+        configureCollectionView()
+        configureDataSource()
+        
         let action = UIAction { [weak self] _ in
             self?.addNewHabbit()
         }
@@ -123,8 +127,11 @@ class MainPageVC: UIViewController {
     }
     
     private func fetchHabbits() {
-        let habbits = AppContainer.habbitsInteractor.fetchHabbits()
-        updateData(habbits: habbits)
+        _ = AppContainer.habbitsInteractor.fetchHabbits()
+        AppContainer.habbitsInteractor.$habbits
+            .receive(on: RunLoop.main)
+            .sink { [weak self] habbits in self?.updateData(habbits: habbits) }
+            .store(in: &cancellables)
     }
     
     private func addNewHabbit() {
