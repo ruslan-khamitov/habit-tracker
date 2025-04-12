@@ -48,7 +48,7 @@ class HabbitVC: UIViewController {
             graph.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             graph.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             graph.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            graph.heightAnchor.constraint(equalToConstant: HabbitGraphUI.totalHeight),
+            graph.heightAnchor.constraint(equalToConstant: HabbitGraphUI.graphPartHeight),
             
             trackTodayButton.topAnchor.constraint(equalTo: graph.bottomAnchor, constant: 20),
             trackTodayButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),

@@ -100,13 +100,6 @@ class HabbitGraph: UIView {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(collectionView)
         
-        
-        let padding: CGFloat = 12
-        
-        let graphPartHeight = HabbitGraphUI.graphPartHeight
-        let titleHeight = HabbitGraphUI.titleHeight
-        let paddingBetweenTitle = HabbitGraphUI.titlePadding
-        
         NSLayoutConstraint.activate(
             [
                 collectionView.topAnchor
@@ -118,7 +111,7 @@ class HabbitGraph: UIView {
                     .constraint(equalTo: trailingAnchor),
                 collectionView.heightAnchor
                     .constraint(
-                        equalToConstant: graphPartHeight
+                        equalToConstant: HabbitGraphUI.graphPartHeight
                     ),
             ]
         )
@@ -132,6 +125,14 @@ class HabbitGraph: UIView {
         let today = Date()
         
         var dates: [DayVM] = []
+        
+        var numberOfColumns = bounds.width / (HabbitGraphUI.tileSize + HabbitGraphUI.tileSpacing)
+        var numberOfDays = numberOfColumns * 7
+        
+        print(bounds.width)
+        print(frame.width)
+        print("numberOfColumns is \(numberOfColumns), numberOfDays = \(numberOfDays)")
+        
         var dateOffset = -363
         while dateOffset <= 0 {
             if let dateFromPastYear = calendar.date(
