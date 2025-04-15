@@ -1,5 +1,5 @@
 //
-//  HabbitGraphCell.swift
+//  HabitGraphCell.swift
 //  HabbitTracker
 //
 //  Created by Ruslan Khamitov on 08.04.2025.
@@ -7,8 +7,8 @@
 
 import UIKit
 
-class HabbitGraphCell: UICollectionViewCell {
-    static let reuseId = "habbit-graph-cell"
+class HabitGraphCell: UICollectionViewCell {
+    static let reuseId = "habit-graph-cell"
     
     override init(frame: CGRect) {
         super.init(frame: frame)

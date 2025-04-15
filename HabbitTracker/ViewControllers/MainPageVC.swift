@@ -17,7 +17,7 @@ class MainPageVC: UIViewController {
     let addHabbitContainer = UIView()
     let addHabbitBtn = UIButton()
     var habbitCollection: UICollectionView!
-    var dataSource: UICollectionViewDiffableDataSource<Section,HabbitVM>!
+    var dataSource: UICollectionViewDiffableDataSource<Section,HabitVM>!
     
     var cancellables = Set<AnyCancellable>()
     
@@ -35,28 +35,28 @@ class MainPageVC: UIViewController {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 16
         layout.sectionInset = UIEdgeInsets(top: 0, left: 12, bottom: 20, right: 12)
-        layout.itemSize = CGSize(width: view.bounds.width, height: HabbitGraphUI.totalHeight)
+        layout.itemSize = CGSize(width: view.bounds.width, height: HabitGraphUI.totalHeight)
         
         habbitCollection = UICollectionView(
             frame: .zero,
             collectionViewLayout: layout
         )
-        habbitCollection?.register(HabbitGraphMainPageCell.self, forCellWithReuseIdentifier: HabbitGraphMainPageCell.reuseId)
+        habbitCollection?.register(HabitGraphMainPageCell.self, forCellWithReuseIdentifier: HabitGraphMainPageCell.reuseId)
     }
     
     private func configureDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, HabbitVM>(collectionView: habbitCollection, cellProvider: { (cv, indexPath, habbit) in
-            let cell = cv.dequeueReusableCell(withReuseIdentifier: HabbitGraphMainPageCell.reuseId, for: indexPath) as! HabbitGraphMainPageCell
-            cell.set(habbit: habbit)
+        dataSource = UICollectionViewDiffableDataSource<Section, HabitVM>(collectionView: habbitCollection, cellProvider: { (cv, indexPath, habit) in
+            let cell = cv.dequeueReusableCell(withReuseIdentifier: HabitGraphMainPageCell.reuseId, for: indexPath) as! HabitGraphMainPageCell
+            cell.set(habit: habit)
             cell.delegate = self
             return cell
         })
     }
     
-    private func updateData(habbits: [HabbitVM]) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, HabbitVM>()
+    private func updateData(habits: [HabitVM]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, HabitVM>()
         snapshot.appendSections([.main])
-        snapshot.appendItems(habbits)
+        snapshot.appendItems(habits)
         
         dataSource.apply(snapshot, animatingDifferences: false)
     }
@@ -126,10 +126,13 @@ class MainPageVC: UIViewController {
     }
     
     private func fetchHabbits() {
-        _ = AppContainer.habbitsInteractor.fetchHabbits()
-        AppContainer.habbitsInteractor.$habbits
+        // TODO: separate functions
+        Task {
+          await AppContainer.habitsInteractor.fetchHabits()
+        }
+        AppContainer.habitsInteractor.$habits
             .receive(on: RunLoop.main)
-            .sink { [weak self] habbits in self?.updateData(habbits: habbits) }
+            .sink { [weak self] habits in self?.updateData(habits: habits) }
             .store(in: &cancellables)
     }
     
@@ -146,9 +149,9 @@ extension MainPageVC: AddHabbitVCDelegate {
     }
 }
 
-extension MainPageVC: HabbitGraphMainPageCellDelegate {
-    func navigateTo(habbit: HabbitVM) {
-        let vc = HabbitVC(habbit: habbit)
+extension MainPageVC: HabitGraphMainPageCellDelegate {
+    func navigateTo(habit: HabitVM) {
+        let vc = HabbitVC(habit: habit)
         navigationController?.pushViewController(vc, animated: true)
     }
 }

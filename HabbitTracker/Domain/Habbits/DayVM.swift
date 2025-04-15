@@ -9,9 +9,9 @@ import Foundation
 
 struct DayVM: Identifiable, Hashable {
     let date: Date
-    let id = UUID()
+    let id: UUID
     
-    var trackedDay: TrackedDays? = nil
+    var trackedDay: TrackedDay? = nil
     
     var tracked: Bool {
         trackedDay != nil

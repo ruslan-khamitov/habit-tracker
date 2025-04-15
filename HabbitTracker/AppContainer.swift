@@ -6,11 +6,11 @@
 //
 
 class AppContainer {
-    static let habbitsRepository: HabbitsRepository = {
-        return CoreDataHabbitsRepository()
+    static let habitsRepository: HabitsRepository = {
+        return CoreDataHabitsRepository()
     }()
     
-    static let habbitsInteractor: HabbitsInteractor = {
-      return HabbitsInteractor(repository: habbitsRepository)
+    static let habitsInteractor: HabitsInteractor = {
+      return HabitsInteractor(repository: habitsRepository)
     }()
 }

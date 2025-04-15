@@ -25,7 +25,7 @@ class AddHabbitVC: UIViewController {
     let colorSubject = CurrentValueSubject<HabbitColors, Never>(.red)
     var habbitName = ""
     
-    let habbitsInteractor = AppContainer.habbitsInteractor
+    let habbitsInteractor = AppContainer.habitsInteractor
     
     init() {
         colorPicker = HabbitColorPicker(selectedColor: colorSubject)
@@ -125,9 +125,13 @@ class AddHabbitVC: UIViewController {
     }
     
     private func addNewHabbit() {
-        habbitsInteractor.saveHabbit(withName: habbitName, andColor: colorSubject.value)
-        
-        dismiss(animated: true)
+        Task {
+            await habbitsInteractor.saveHabit(withName: habbitName, andColor: colorSubject.value)
+            
+            await MainActor.run {
+                dismiss(animated: true)
+            }
+        }
     }
 
 }

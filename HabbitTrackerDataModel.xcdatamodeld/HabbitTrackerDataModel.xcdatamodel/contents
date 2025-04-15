@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24D81" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="Habbit" representedClassName="Habbit" syncable="YES" codeGenerationType="class">
-        <attribute name="color" optional="YES" attributeType="String"/>
-        <attribute name="name" optional="YES" attributeType="String"/>
-        <relationship name="tracked" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TrackedDays" inverseName="habbit" inverseEntity="TrackedDays"/>
+    <entity name="Habit" representedClassName="Habit" syncable="YES" codeGenerationType="class">
+        <attribute name="color" attributeType="String" defaultValueString="red"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
+        <relationship name="tracked" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TrackedDay" inverseName="habit" inverseEntity="TrackedDay"/>
     </entity>
-    <entity name="TrackedDays" representedClassName="TrackedDays" syncable="YES" codeGenerationType="class">
-        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <relationship name="habbit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Habbit" inverseName="tracked" inverseEntity="Habbit"/>
+    <entity name="TrackedDay" representedClassName="TrackedDay" syncable="YES" codeGenerationType="class">
+        <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="habit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Habit" inverseName="tracked" inverseEntity="Habit"/>
     </entity>
 </model>

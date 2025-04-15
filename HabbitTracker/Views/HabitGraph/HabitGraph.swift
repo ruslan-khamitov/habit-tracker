@@ -1,5 +1,5 @@
 //
-//  HabbitGraph.swift
+//  HabitGraph.swift
 //  HabbitTracker
 //
 //  Created by Ruslan Khamitov on 07.04.2025.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class HabbitGraph: UIView {
+class HabitGraph: UIView {
     enum Section {
         case main
     }
@@ -18,7 +18,7 @@ class HabbitGraph: UIView {
     var dataSource: UICollectionViewDiffableDataSource<Section, DayVM>!
     
     // State
-    var habbit: HabbitVM? = nil
+    var habit: HabitVM? = nil
     var trackedColor = HabbitColors.defaultColor
     
     override init(frame: CGRect) {
@@ -46,8 +46,8 @@ class HabbitGraph: UIView {
         layout.minimumInteritemSpacing = spacing
         layout.minimumLineSpacing = spacing
         layout.itemSize = CGSize(
-            width: HabbitGraphUI.tileSize,
-            height: HabbitGraphUI.tileSize
+            width: HabitGraphUI.tileSize,
+            height: HabitGraphUI.tileSize
         )
         layout.sectionInset = UIEdgeInsets(
             top: 0,
@@ -62,8 +62,8 @@ class HabbitGraph: UIView {
         )
         collectionView
             .register(
-                HabbitGraphCell.self,
-                forCellWithReuseIdentifier: HabbitGraphCell.reuseId
+                HabitGraphCell.self,
+                forCellWithReuseIdentifier: HabitGraphCell.reuseId
             )
     }
     
@@ -75,9 +75,9 @@ class HabbitGraph: UIView {
                 indexPath,
                 day in
                 let cell = cv.dequeueReusableCell(
-                    withReuseIdentifier: HabbitGraphCell.reuseId,
+                    withReuseIdentifier: HabitGraphCell.reuseId,
                     for: indexPath
-                ) as! HabbitGraphCell
+                ) as! HabitGraphCell
                 
                 let color = self?.trackedColor.toUIColor() ?? HabbitColors.defaultColor.toUIColor()
                 cell.backgroundColor = day.tracked ? color : UIColor.systemGray
@@ -111,27 +111,23 @@ class HabbitGraph: UIView {
                     .constraint(equalTo: trailingAnchor),
                 collectionView.heightAnchor
                     .constraint(
-                        equalToConstant: HabbitGraphUI.graphPartHeight
+                        equalToConstant: HabitGraphUI.graphPartHeight
                     ),
             ]
         )
     }
     
-    public func set(habbit: HabbitVM) {
-        trackedColor = habbit.color
-        self.habbit = habbit
+    public func set(habit: HabitVM) {
+        trackedColor = habit.color
+        self.habit = habit
         
         let calendar = Calendar.current
         let today = Date()
         
         var dates: [DayVM] = []
         
-        var numberOfColumns = bounds.width / (HabbitGraphUI.tileSize + HabbitGraphUI.tileSpacing)
+        var numberOfColumns = bounds.width / (HabitGraphUI.tileSize + HabitGraphUI.tileSpacing)
         var numberOfDays = numberOfColumns * 7
-        
-        print(bounds.width)
-        print(frame.width)
-        print("numberOfColumns is \(numberOfColumns), numberOfDays = \(numberOfDays)")
         
         var dateOffset = -363
         while dateOffset <= 0 {
@@ -141,14 +137,14 @@ class HabbitGraph: UIView {
                 to: today
             ) {
                 let untrackedDate = calendar.startOfDay(for: dateFromPastYear)
-                let trackedDate = habbit.trackedDays.first {
+                let trackedDate = habit.trackedDays.first {
                     calendar.startOfDay(for: $0.date) == untrackedDate
                 }
                     
                 if let trackedDate = trackedDate {
                     dates.append(trackedDate)
                 } else {
-                    dates.append(DayVM(date: untrackedDate, trackedDay: nil))
+                    dates.append(DayVM(date: untrackedDate, id: UUID(), trackedDay: nil))
                 }
                 
                 dateOffset += 1

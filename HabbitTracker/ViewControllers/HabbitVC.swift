@@ -8,17 +8,17 @@
 import UIKit
 
 class HabbitVC: UIViewController {
-    let graph: HabbitGraph
+    let graph: HabitGraph
     let trackTodayButton = UIButton()
     let deleteHabbitButton = UIButton()
     
-    var habbit: HabbitVM
+    var habit: HabitVM
     
-    init(habbit: HabbitVM) {
-        graph = HabbitGraph()
-        graph.set(habbit: habbit)
+    init(habit: HabitVM) {
+        graph = HabitGraph()
+        graph.set(habit: habit)
         
-        self.habbit = habbit
+        self.habit = habit
         
         super.init(nibName: nil, bundle: nil)
     }
@@ -44,22 +44,38 @@ class HabbitVC: UIViewController {
         view.addSubview(trackTodayButton)
         view.addSubview(deleteHabbitButton)
         
-        NSLayoutConstraint.activate([
-            graph.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+        NSLayoutConstraint.activate(
+[
+            graph.topAnchor
+                .constraint(
+                    equalTo: view.safeAreaLayoutGuide.topAnchor,
+                    constant: 20
+                ),
             graph.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             graph.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            graph.heightAnchor.constraint(equalToConstant: HabbitGraphUI.graphPartHeight),
+            graph.heightAnchor
+                .constraint(equalToConstant: HabitGraphUI.graphPartHeight),
             
-            trackTodayButton.topAnchor.constraint(equalTo: graph.bottomAnchor, constant: 20),
-            trackTodayButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-            trackTodayButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+            trackTodayButton.topAnchor
+                .constraint(equalTo: graph.bottomAnchor, constant: 20),
+            trackTodayButton.leadingAnchor
+                .constraint(equalTo: view.leadingAnchor, constant: 12),
+            trackTodayButton.trailingAnchor
+                .constraint(equalTo: view.trailingAnchor, constant: -12),
             trackTodayButton.heightAnchor.constraint(equalToConstant: 50),
             
-            deleteHabbitButton.topAnchor.constraint(equalTo: trackTodayButton.bottomAnchor, constant: 20),
-            deleteHabbitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-            deleteHabbitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+            deleteHabbitButton.topAnchor
+                .constraint(
+                    equalTo: trackTodayButton.bottomAnchor,
+                    constant: 20
+                ),
+            deleteHabbitButton.leadingAnchor
+                .constraint(equalTo: view.leadingAnchor, constant: 12),
+            deleteHabbitButton.trailingAnchor
+                .constraint(equalTo: view.trailingAnchor, constant: -12),
             deleteHabbitButton.heightAnchor.constraint(equalToConstant: 50),
-        ])
+]
+        )
     }
     
     private func configureComponents() {
@@ -76,7 +92,7 @@ class HabbitVC: UIViewController {
     
     private func stylize() {
         view.backgroundColor = .systemBackground
-        navigationItem.title = habbit.name
+        navigationItem.title = habit.name
         navigationController?.navigationBar.prefersLargeTitles = true
         
         var trackBtnConfiguration = UIButton.Configuration.bordered()
@@ -92,37 +108,49 @@ class HabbitVC: UIViewController {
     }
     
     private func toggleToday() {
-        let vm = DayVM(date: Date())
+        let vm = DayVM(date: Date(),id: UUID())
         
-        let interactor = AppContainer.habbitsInteractor
+        let interactor = AppContainer.habitsInteractor
         
-        interactor.toggleTrack(day: vm, forHabbit: habbit)
-        
-        let newHabbit = interactor.refetchHabbit(habbit: habbit)
-        if let newHabbit = newHabbit {
-            habbit = newHabbit
-            graph.set(habbit: newHabbit)
+        Task {
+            await interactor.toggleTrack(day: vm, forHabit: habit)
+            
+            let newHabit = await interactor.refetchHabit(habit: habit)
+            if let newHabit = newHabit {
+                await MainActor.run {
+                    habit = newHabit
+                    graph.set(habit: newHabit)
+                }
+            }
         }
     }
     
     private func deleteHabbit() {
         let alert = UIAlertController(
             title: "Delete habit?",
-            message: "Are you sure you want to delete this habbit?",
+            message: "Are you sure you want to delete this habit?",
             preferredStyle: .alert
         )
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { [weak self] _ in
-            self?.submitDeleteHabbit()
-        }))
+        alert
+            .addAction(
+                UIAlertAction(
+                    title: "Delete",
+                    style: .destructive,
+                    handler: { [weak self] _ in
+                        self?.submitDeleteHabbit()
+                    })
+            )
         
         present(alert, animated: true)
     }
     
     private func submitDeleteHabbit() {
         navigationController?.popViewController(animated: true)
-        
-        AppContainer.habbitsInteractor.remove(habbit: habbit)
+
+        Task {
+            await AppContainer.habitsInteractor.remove(habit: habit)
+        }    
     }
 }

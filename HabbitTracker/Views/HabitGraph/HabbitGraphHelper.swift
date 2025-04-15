@@ -7,7 +7,7 @@
 
 import CoreFoundation
 
-struct HabbitGraphUI {
+struct HabitGraphUI {
     static let tileSpacing: CGFloat = 4
     static let tileSize: CGFloat = 16
     static let titleHeight: CGFloat = 34

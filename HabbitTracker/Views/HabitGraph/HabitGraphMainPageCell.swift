@@ -7,21 +7,21 @@
 
 import UIKit
 
-protocol HabbitGraphMainPageCellDelegate: AnyObject {
-    func navigateTo(habbit: HabbitVM) -> Void
+protocol HabitGraphMainPageCellDelegate: AnyObject {
+    func navigateTo(habit: HabitVM) -> Void
 }
 
-class HabbitGraphMainPageCell: UICollectionViewCell {
+class HabitGraphMainPageCell: UICollectionViewCell {
     static let reuseId = "HabbitGraph"
     
     var title = UILabel()
     var seeButton = UIButton()
     var stack = UIStackView()
-    let habbitGraph = HabbitGraph()
+    let habbitGraph = HabitGraph()
     
-    var habbit: HabbitVM? = nil
+    var habit: HabitVM? = nil
     
-    weak var delegate: HabbitGraphMainPageCellDelegate? = nil
+    weak var delegate: HabitGraphMainPageCellDelegate? = nil
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -61,9 +61,9 @@ class HabbitGraphMainPageCell: UICollectionViewCell {
         
         let padding: CGFloat = 12
         
-        let graphPartHeight = HabbitGraphUI.graphPartHeight
-        let titleHeight = HabbitGraphUI.titleHeight
-        let paddingBetweenTitle = HabbitGraphUI.titlePadding
+        let graphPartHeight = HabitGraphUI.graphPartHeight
+        let titleHeight = HabitGraphUI.titleHeight
+        let paddingBetweenTitle = HabitGraphUI.titlePadding
         
         NSLayoutConstraint.activate(
             [
@@ -111,15 +111,15 @@ class HabbitGraphMainPageCell: UICollectionViewCell {
         seeButton.configuration = configuration
     }
     
-    public func set(habbit: HabbitVM) {
-        self.habbit = habbit
-        title.text = habbit.name
-        habbitGraph.set(habbit: habbit)
+    public func set(habit: HabitVM) {
+        self.habit = habit
+        title.text = habit.name
+        habbitGraph.set(habit: habit)
     }
     
     private func onSeeMoreTapped() {
-        guard let habbit else { return }
+        guard let habit else { return }
         
-        delegate?.navigateTo(habbit: habbit)
+        delegate?.navigateTo(habit: habit)
     }
 }
