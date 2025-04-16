@@ -4,10 +4,12 @@
 //
 //  Created by Ruslan Khamitov on 10.04.2025.
 //
+import UIKit
 
 class AppContainer {
     static let habitsRepository: HabitsRepository = {
-        return CoreDataHabitsRepository()
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        return CoreDataHabitsRepository(ctx: context)
     }()
     
     static let habitsInteractor: HabitsInteractor = {

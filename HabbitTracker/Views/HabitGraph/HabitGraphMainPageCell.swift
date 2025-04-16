@@ -8,7 +8,7 @@
 import UIKit
 
 protocol HabitGraphMainPageCellDelegate: AnyObject {
-    func navigateTo(habit: HabitVM) -> Void
+    func navigateTo(habit: HabitEntity) -> Void
 }
 
 class HabitGraphMainPageCell: UICollectionViewCell {
@@ -19,7 +19,7 @@ class HabitGraphMainPageCell: UICollectionViewCell {
     var stack = UIStackView()
     let habbitGraph = HabitGraph()
     
-    var habit: HabitVM? = nil
+    var habit: HabitEntity? = nil
     
     weak var delegate: HabitGraphMainPageCellDelegate? = nil
     
@@ -111,7 +111,7 @@ class HabitGraphMainPageCell: UICollectionViewCell {
         seeButton.configuration = configuration
     }
     
-    public func set(habit: HabitVM) {
+    public func set(habit: HabitEntity) {
         self.habit = habit
         title.text = habit.name
         habbitGraph.set(habit: habit)

@@ -6,15 +6,19 @@
 //
 
 import UIKit
+import SwiftUI
 
 class HabbitVC: UIViewController {
     let graph: HabitGraph
     let trackTodayButton = UIButton()
-    let deleteHabbitButton = UIButton()
     
-    var habit: HabitVM
+    let deleteHabitButton = UIButton()
+    let editButton = UIButton()
+    let habitActionsStack = UIStackView()
     
-    init(habit: HabitVM) {
+    var habit: HabitEntity
+    
+    init(habit: HabitEntity) {
         graph = HabitGraph()
         graph.set(habit: habit)
         
@@ -38,17 +42,50 @@ class HabbitVC: UIViewController {
     private func configureLayout() {
         graph.translatesAutoresizingMaskIntoConstraints = false
         trackTodayButton.translatesAutoresizingMaskIntoConstraints = false
-        deleteHabbitButton.translatesAutoresizingMaskIntoConstraints = false
+        deleteHabitButton.translatesAutoresizingMaskIntoConstraints = false
+        habitActionsStack.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(graph)
         view.addSubview(trackTodayButton)
-        view.addSubview(deleteHabbitButton)
+
+        // Habit Actions Stack
+        view.addSubview(habitActionsStack)
+        habitActionsStack.addArrangedSubview(editButton)
+        habitActionsStack.addArrangedSubview(deleteHabitButton)
+        habitActionsStack.axis = .horizontal
+        
+        let habitActionsSpacing: CGFloat = 8
+        
+        habitActionsStack.spacing = 8
+        habitActionsStack.distribution = .fillEqually
+        
+        let habitActionsButtonSize: CGFloat = 50
+        
+        
+        let horizontalPadding: CGFloat = 12
         
         NSLayoutConstraint.activate(
 [
-            graph.topAnchor
+            habitActionsStack.topAnchor
                 .constraint(
                     equalTo: view.safeAreaLayoutGuide.topAnchor,
+                    constant: 20
+                ),
+            habitActionsStack.leadingAnchor
+                .constraint(
+                    equalTo: view.leadingAnchor,
+                    constant: horizontalPadding
+                ),
+            habitActionsStack.widthAnchor
+                .constraint(
+                    equalToConstant: habitActionsButtonSize * 2 + habitActionsSpacing
+                ),
+            habitActionsStack.heightAnchor
+                .constraint(equalToConstant: habitActionsButtonSize),
+            
+            graph.topAnchor
+                .constraint(
+                    equalTo: habitActionsStack.bottomAnchor,
                     constant: 20
                 ),
             graph.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -59,21 +96,21 @@ class HabbitVC: UIViewController {
             trackTodayButton.topAnchor
                 .constraint(equalTo: graph.bottomAnchor, constant: 20),
             trackTodayButton.leadingAnchor
-                .constraint(equalTo: view.leadingAnchor, constant: 12),
+                .constraint(
+                    equalTo: view.leadingAnchor,
+                    constant: horizontalPadding
+                ),
             trackTodayButton.trailingAnchor
-                .constraint(equalTo: view.trailingAnchor, constant: -12),
+                .constraint(
+                    equalTo: view.trailingAnchor,
+                    constant: -horizontalPadding
+                ),
             trackTodayButton.heightAnchor.constraint(equalToConstant: 50),
             
-            deleteHabbitButton.topAnchor
-                .constraint(
-                    equalTo: trackTodayButton.bottomAnchor,
-                    constant: 20
-                ),
-            deleteHabbitButton.leadingAnchor
-                .constraint(equalTo: view.leadingAnchor, constant: 12),
-            deleteHabbitButton.trailingAnchor
-                .constraint(equalTo: view.trailingAnchor, constant: -12),
-            deleteHabbitButton.heightAnchor.constraint(equalToConstant: 50),
+            editButton.widthAnchor
+                .constraint(equalToConstant: habitActionsButtonSize),
+            deleteHabitButton.widthAnchor
+                .constraint(equalToConstant: habitActionsButtonSize)
 ]
         )
     }
@@ -87,7 +124,12 @@ class HabbitVC: UIViewController {
         let deleteAction = UIAction { [weak self] _ in
             self?.deleteHabbit()
         }
-        deleteHabbitButton.addAction(deleteAction, for: .touchUpInside)
+        deleteHabitButton.addAction(deleteAction, for: .touchUpInside)
+        
+        let editAction = UIAction { [weak self] _ in
+            self?.editHabit()
+        }
+        editButton.addAction(editAction, for: .touchUpInside)
     }
     
     private func stylize() {
@@ -101,14 +143,21 @@ class HabbitVC: UIViewController {
         trackBtnConfiguration.baseForegroundColor = .white
         trackTodayButton.configuration = trackBtnConfiguration
         
-        var deleteBtnConfiguration = UIButton.Configuration.borderless()
-        deleteBtnConfiguration.title = "Delete habbit"
+        var deleteBtnConfiguration = UIButton.Configuration.bordered()
         deleteBtnConfiguration.baseForegroundColor = .systemRed
-        deleteHabbitButton.configuration = deleteBtnConfiguration
+        deleteBtnConfiguration.baseBackgroundColor = .systemGray4
+        deleteBtnConfiguration.image = UIImage(systemName: "trash")
+        deleteHabitButton.configuration = deleteBtnConfiguration
+        
+        var editBtnConfiguration = UIButton.Configuration.bordered()
+        editBtnConfiguration.baseForegroundColor = .label
+        editBtnConfiguration.baseBackgroundColor = .systemGray4
+        editBtnConfiguration.image = UIImage(systemName: "pencil")
+        editButton.configuration = editBtnConfiguration
     }
     
     private func toggleToday() {
-        let vm = DayVM(date: Date(),id: UUID())
+        let vm = HabitDay(id: UUID(), date: Date(), isTracked: true)
         
         let interactor = AppContainer.habitsInteractor
         
@@ -117,12 +166,43 @@ class HabbitVC: UIViewController {
             
             let newHabit = await interactor.refetchHabit(habit: habit)
             if let newHabit = newHabit {
-                await MainActor.run {
-                    habit = newHabit
-                    graph.set(habit: newHabit)
-                }
+                onHabitUpdate(newHabit: newHabit)
             }
         }
+    }
+    
+    @MainActor
+    private func onHabitUpdate(newHabit: HabitEntity) {
+       habit = newHabit
+       graph.set(habit: newHabit)
+       graph.collectionView.reloadData()
+       navigationItem.title = newHabit.name
+    }
+    
+    private func refetchHabit() {
+        Task {
+            let updatedHabit = await AppContainer.habitsInteractor.refetchHabit(
+                habit: habit
+            )
+            guard let updatedHabit else {
+                _ = await MainActor.run {
+                    // TODO: handle this situation
+                    navigationController?.popViewController(animated: true)
+                }
+                return
+            }
+            
+            onHabitUpdate(newHabit: updatedHabit)
+        }
+    }
+    
+    private func editHabit() {
+        let addHabit = AddHabit(habitToEdit: habit) {
+            self.refetchHabit()
+        }
+        let vc = UIHostingController(rootView: addHabit)
+        
+        present(vc, animated: true)
     }
     
     private func deleteHabbit() {

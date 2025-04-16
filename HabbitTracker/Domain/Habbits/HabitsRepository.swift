@@ -7,12 +7,12 @@
 import Foundation
 
 protocol HabitsRepository {
-    func save(withName name: String, color: HabbitColors) async -> Result<Habit, Errors>
-    func update(habit: Habit) async -> Result<Habit, Errors>
+    func create(withName name: String, color: HabbitColors) async -> Result<HabitEntity, Errors>
+    func update(habit: HabitEntity) async -> Result<HabitEntity, Errors>
     func delete(byHabitId: UUID) async -> Result<Void, Errors>
-    func fetchHabits() async -> Result<[Habit], Errors>
-    func fetch(byHabitId: UUID) async -> Habit?
+    func fetchHabits() async -> Result<[HabitEntity], Errors>
+    func fetch(byHabitId: UUID) async -> HabitEntity?
     
-    func track(day: Date, forHabitId: UUID) async -> Result<TrackedDay, Errors>
+    func track(day: Date, forHabitId: UUID) async -> Result<HabitDay, Errors>
     func untrack(byTrackedDayId: UUID) async -> Result<Void, Errors>
 }

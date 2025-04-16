@@ -23,4 +23,12 @@ class HabitGraphCell: UICollectionViewCell {
     private func stylize() {
         backgroundColor = .systemGray
     }
+    
+    public func setNextColor(color: UIColor) {
+        guard color != backgroundColor else {
+            return
+        }
+        
+        backgroundColor = color
+    }
 }

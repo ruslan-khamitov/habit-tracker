@@ -9,11 +9,13 @@ import UIKit
 
 
 class CoreDataHabitsRepository: HabitsRepository {
-    private let ctx = (
-        UIApplication.shared.delegate as! AppDelegate
-    ).persistentContainer.viewContext
+    private let ctx: NSManagedObjectContext
     
-    public func fetch(byHabitId id: UUID) -> Habit? {
+    init(ctx: NSManagedObjectContext) {
+        self.ctx = ctx
+    }
+    
+    private func fetchCoreDataHabit(byHabitId id: UUID) -> Habit? {
         do {
             let request = Habit.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -27,8 +29,12 @@ class CoreDataHabitsRepository: HabitsRepository {
         }
     }
     
+    func fetch(byHabitId id: UUID) async -> HabitEntity? {
+        fetchCoreDataHabit(byHabitId: id)?.habitEntity
+    }
+    
     private func fetchOrCreate(byHabitId id: UUID) throws -> Habit {
-        let fetched = fetch(byHabitId: id)
+        let fetched = fetchCoreDataHabit(byHabitId: id)
         if let existing = fetched {
             return existing
         }
@@ -65,8 +71,16 @@ class CoreDataHabitsRepository: HabitsRepository {
         return newTrackedDay
     }
     
-    func update(habit: Habit) async -> Result<Habit, Errors> {
+    func update(habit: HabitEntity) async -> Result<HabitEntity, Errors> {
         do {
+            let habitToUpdate = fetchCoreDataHabit(byHabitId: habit.id)
+            guard let habitToUpdate else {
+                return .failure(.failedToFetchHabit)
+            }
+            
+            habitToUpdate.name = habit.name
+            habitToUpdate.color = habit.color.rawValue
+            
             try await MainActor.run {
                 try ctx.save()
             }
@@ -79,7 +93,7 @@ class CoreDataHabitsRepository: HabitsRepository {
     
     func delete(byHabitId id: UUID) async -> Result<Void, Errors> {
         do {
-            let habit = fetch(byHabitId: id)
+            let habit = fetchCoreDataHabit(byHabitId: id)
             
             guard let habit else {
                 return .success(())
@@ -97,52 +111,59 @@ class CoreDataHabitsRepository: HabitsRepository {
         }
     }
     
-    func fetchHabits() async -> Result<[Habit], Errors> {
+    func fetchHabits() async -> Result<[HabitEntity], Errors> {
         do {
             let result = try await MainActor.run {
                 try ctx.fetch(Habit.fetchRequest())
             }
             
-            return .success(result)
+            let habits =  result.compactMap({ $0.habitEntity })
+            return .success(habits)
         } catch {
             return .failure(.failedToFetchHabit)
         }
     }
     
-    func save(withName name: String, color: HabbitColors) async -> Result<Habit, Errors> {
+    func create(withName name: String, color: HabbitColors) async -> Result<HabitEntity, Errors> {
         do {
             let habit = Habit(context: ctx)
+            let id = UUID()
             habit.name = name
             habit.color = color.rawValue
-            habit.id = UUID()
+            habit.id = id
             
             try await MainActor.run {
                 try ctx.save()
             }
             
-            return .success(habit)
+            let entity = HabitEntity(id: id, name: name, color: color.rawValue)
+            
+            return .success(entity)
         } catch {
             return .failure(.failedToSaveHabit)
         }
     }
     
-    func track(day: Date, forHabitId habitId: UUID) async -> Result<TrackedDay, Errors> {
+    func track(day: Date, forHabitId habitId: UUID) async -> Result<HabitDay, Errors> {
         do {
-            let habit = fetch(byHabitId: habitId)
+            let habit = fetchCoreDataHabit(byHabitId: habitId)
             guard let habit else {
                 return .failure(.habitNotFound)
             }
             
+            let dayId = UUID()
+            
             let trackedDay = TrackedDay(context: ctx)
             trackedDay.habit = habit
             trackedDay.date = day
-            trackedDay.id = UUID()
+            trackedDay.id = dayId
             
             try await MainActor.run {
                 try ctx.save()
             }
             
-            return .success(trackedDay)
+            let habitDay = HabitDay(id: dayId, date: day, isTracked: true)
+            return .success(habitDay)
         } catch {
             return .failure(.failedToTrackDay)
         }

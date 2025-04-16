@@ -15,10 +15,10 @@ class HabitGraph: UIView {
     // Components
     var collectionView: UICollectionView!
     
-    var dataSource: UICollectionViewDiffableDataSource<Section, DayVM>!
+    var dataSource: UICollectionViewDiffableDataSource<Section, HabitDay>!
     
     // State
-    var habit: HabitVM? = nil
+    var habit: HabitEntity? = nil
     var trackedColor = HabbitColors.defaultColor
     
     override init(frame: CGRect) {
@@ -27,6 +27,14 @@ class HabitGraph: UIView {
         configureComponents()
         configureSubviews()
         stylize()
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        DispatchQueue.main.async {
+            self.scrollToEnd()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -65,10 +73,12 @@ class HabitGraph: UIView {
                 HabitGraphCell.self,
                 forCellWithReuseIdentifier: HabitGraphCell.reuseId
             )
+        
+        collectionView.showsHorizontalScrollIndicator = false
     }
     
     private func configureCollectionViewDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, DayVM>(
+        dataSource = UICollectionViewDiffableDataSource<Section, HabitDay>(
             collectionView: collectionView,
             cellProvider: { [weak self]
                 cv,
@@ -80,7 +90,8 @@ class HabitGraph: UIView {
                 ) as! HabitGraphCell
                 
                 let color = self?.trackedColor.toUIColor() ?? HabbitColors.defaultColor.toUIColor()
-                cell.backgroundColor = day.tracked ? color : UIColor.systemGray
+                let nextColor = day.isTracked ? color : UIColor.systemGray
+                cell.setNextColor(color: nextColor)
                 
                 return cell
             }
@@ -88,12 +99,12 @@ class HabitGraph: UIView {
         
     }
     
-    private func updateData(data: [DayVM]) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, DayVM>()
+    private func updateData(data: [HabitDay]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, HabitDay>()
         snapshot.appendSections([.main])
         snapshot.appendItems(data)
         
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
     
     private func configureSubviews() {
@@ -117,14 +128,14 @@ class HabitGraph: UIView {
         )
     }
     
-    public func set(habit: HabitVM) {
+    public func set(habit: HabitEntity) {
         trackedColor = habit.color
         self.habit = habit
         
         let calendar = Calendar.current
         let today = Date()
         
-        var dates: [DayVM] = []
+        var dates: [HabitDay] = []
         
         var numberOfColumns = bounds.width / (HabitGraphUI.tileSize + HabitGraphUI.tileSpacing)
         var numberOfDays = numberOfColumns * 7
@@ -144,7 +155,7 @@ class HabitGraph: UIView {
                 if let trackedDate = trackedDate {
                     dates.append(trackedDate)
                 } else {
-                    dates.append(DayVM(date: untrackedDate, id: UUID(), trackedDay: nil))
+                    dates.append(HabitDay(id: UUID(), date: untrackedDate, isTracked: false))
                 }
                 
                 dateOffset += 1
@@ -158,4 +169,7 @@ class HabitGraph: UIView {
         backgroundColor = .systemBackground
     }
 
+    private func scrollToEnd() {
+        collectionView.setContentOffset(CGPoint(x: collectionView.contentSize.width - collectionView.bounds.width, y: 0), animated: false)
+    }
 }

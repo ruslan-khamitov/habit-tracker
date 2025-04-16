@@ -28,4 +28,8 @@ enum HabbitColors: String {
     }
     
     static let defaultColor: HabbitColors = .green
+    
+    static func parse(from string: String) -> HabbitColors {
+        HabbitColors(rawValue: string) ?? defaultColor
+    }
 }

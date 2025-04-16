@@ -7,15 +7,10 @@
 
 import Foundation
 
-struct DayVM: Identifiable, Hashable {
-    let date: Date
+struct HabitDay: Identifiable, Hashable {
     let id: UUID
-    
-    var trackedDay: TrackedDay? = nil
-    
-    var tracked: Bool {
-        trackedDay != nil
-    }
+    let date: Date
+    let isTracked: Bool
     
     func getStartOfDay() -> Date {
         let calendar = Calendar.current

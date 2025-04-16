@@ -10,7 +10,7 @@ import Combine
 class HabitsInteractor: ObservableObject {
     private let repository: HabitsRepository
     
-    @Published var habits: [HabitVM] = []
+    @Published var habits: [HabitEntity] = []
     
     init(repository: HabitsRepository) {
         self.repository = repository
@@ -20,50 +20,40 @@ class HabitsInteractor: ObservableObject {
         let fetchResult = await repository.fetchHabits()
         
         do {
-            let result: [Habit] = try fetchResult.get()
-            
-            self.habits = result.compactMap { HabitHelper.parseHabitVMfromCoreData($0) }
+            habits = try fetchResult.get()
         } catch {
             // TODO: add handling
         }
     }
     
-    func saveHabit(withName name: String, andColor color: HabbitColors) async {
-        let saveResult = await repository.save(withName: name, color: color)
+    func createHabit(withName name: String, andColor color: HabbitColors) async {
+        let saveResult = await repository.create(withName: name, color: color)
         do {
-            let savedHabit = try saveResult.get()
-            let habit = HabitHelper.parseHabitVMfromCoreData(savedHabit)
-            guard let habit = habit else {
-                return
-            }
+            let habit = try saveResult.get()
             habits.append(habit)
         } catch {
             // TODO: add handling
         }
     }
     
-    func refetchHabit(habit: HabitVM) async -> HabitVM? {
-        let fetchResult = await repository.fetch(byHabitId: habit.id)
-        
-        guard let fetchedHabit = fetchResult else {
-            return nil
-        }
-        
-        guard let parsedHabit = HabitHelper.parseHabitVMfromCoreData(fetchedHabit) else {
-            return nil
-        }
-        
-        let index = self.habits.firstIndex { habit in
-            habit.id == fetchedHabit.id
-        }
-        if let index = index {
-            self.habits[index] = parsedHabit
-        }
-        
-        return parsedHabit
+    func updateHabit(habit: HabitEntity) async -> Void {
+        _ = await repository.update(habit: habit)
     }
     
-    func remove(habit: HabitVM) async {
+    func refetchHabit(habit: HabitEntity) async -> HabitEntity? {
+        let fetchedHabit = await repository.fetch(byHabitId: habit.id)
+        guard let fetchedHabit else {
+            return nil
+        }
+    
+        if let index = habits.firstIndex(where: { $0.id == fetchedHabit.id }) {
+            self.habits[index] = fetchedHabit
+        }
+        
+        return fetchedHabit
+    }
+    
+    func remove(habit: HabitEntity) async {
         let result = await repository.delete(byHabitId: habit.id)
         result.onSuccess {
             self.habits = self.habits
@@ -74,16 +64,16 @@ class HabitsInteractor: ObservableObject {
     }
     
     // Tracking days
-    private func track(day: DayVM, forHabit habit: HabitVM) async {
+    private func track(day: HabitDay, forHabit habit: HabitEntity) async {
         let dateToTrack = day.getStartOfDay()
         _ = await repository.track(day: dateToTrack, forHabitId: habit.id)
     }
     
-    private func untrack(day: DayVM) async {
+    private func untrack(day: HabitDay) async {
         _ = await repository.untrack(byTrackedDayId: day.id)
     }
     
-    func toggleTrack(day: DayVM, forHabit habit: HabitVM) async {
+    func toggleTrack(day: HabitDay, forHabit habit: HabitEntity) async {
         let toggleDate = day.getStartOfDay()
         
         let trackedDay = habit.trackedDays.first { $0.date == toggleDate }

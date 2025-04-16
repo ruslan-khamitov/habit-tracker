@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 import Combine
 
 class MainPageVC: UIViewController {
@@ -17,7 +18,7 @@ class MainPageVC: UIViewController {
     let addHabbitContainer = UIView()
     let addHabbitBtn = UIButton()
     var habbitCollection: UICollectionView!
-    var dataSource: UICollectionViewDiffableDataSource<Section,HabitVM>!
+    var dataSource: UICollectionViewDiffableDataSource<Section,HabitEntity>!
     
     var cancellables = Set<AnyCancellable>()
     
@@ -45,7 +46,7 @@ class MainPageVC: UIViewController {
     }
     
     private func configureDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, HabitVM>(collectionView: habbitCollection, cellProvider: { (cv, indexPath, habit) in
+        dataSource = UICollectionViewDiffableDataSource<Section, HabitEntity>(collectionView: habbitCollection, cellProvider: { (cv, indexPath, habit) in
             let cell = cv.dequeueReusableCell(withReuseIdentifier: HabitGraphMainPageCell.reuseId, for: indexPath) as! HabitGraphMainPageCell
             cell.set(habit: habit)
             cell.delegate = self
@@ -53,8 +54,8 @@ class MainPageVC: UIViewController {
         })
     }
     
-    private func updateData(habits: [HabitVM]) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, HabitVM>()
+    private func updateData(habits: [HabitEntity]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, HabitEntity>()
         snapshot.appendSections([.main])
         snapshot.appendItems(habits)
         
@@ -137,20 +138,13 @@ class MainPageVC: UIViewController {
     }
     
     private func addNewHabbit() {
-        let vc = AddHabbitVC()
-        vc.delegate = self
-        present(vc, animated: true)
-    }
-}
-
-extension MainPageVC: AddHabbitVCDelegate {
-    func onAddHabbitDismiss() {
-        fetchHabbits()
+        let addHabitVC = UIHostingController(rootView: AddHabit())
+        present(addHabitVC, animated: true)
     }
 }
 
 extension MainPageVC: HabitGraphMainPageCellDelegate {
-    func navigateTo(habit: HabitVM) {
+    func navigateTo(habit: HabitEntity) {
         let vc = HabbitVC(habit: habit)
         navigationController?.pushViewController(vc, animated: true)
     }
