@@ -11,6 +11,7 @@ import SwiftUI
 class HabbitVC: UIViewController {
     let graph: HabitGraph
     let trackTodayButton = UIButton()
+    let trackSomeDateButton = UIButton()
     
     let deleteHabitButton = UIButton()
     let editButton = UIButton()
@@ -44,9 +45,11 @@ class HabbitVC: UIViewController {
         trackTodayButton.translatesAutoresizingMaskIntoConstraints = false
         deleteHabitButton.translatesAutoresizingMaskIntoConstraints = false
         habitActionsStack.translatesAutoresizingMaskIntoConstraints = false
+        trackSomeDateButton.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(graph)
         view.addSubview(trackTodayButton)
+        view.addSubview(trackSomeDateButton)
 
         // Habit Actions Stack
         view.addSubview(habitActionsStack)
@@ -65,53 +68,65 @@ class HabbitVC: UIViewController {
         let horizontalPadding: CGFloat = 12
         
         NSLayoutConstraint.activate(
-[
-            habitActionsStack.topAnchor
-                .constraint(
-                    equalTo: view.safeAreaLayoutGuide.topAnchor,
-                    constant: 20
-                ),
-            habitActionsStack.leadingAnchor
-                .constraint(
-                    equalTo: view.leadingAnchor,
-                    constant: horizontalPadding
-                ),
-            habitActionsStack.widthAnchor
-                .constraint(
-                    equalToConstant: habitActionsButtonSize * 2 + habitActionsSpacing
-                ),
-            habitActionsStack.heightAnchor
-                .constraint(equalToConstant: habitActionsButtonSize),
+            [
+                habitActionsStack.topAnchor
+                    .constraint(
+                        equalTo: view.safeAreaLayoutGuide.topAnchor,
+                        constant: 20
+                    ),
+                habitActionsStack.leadingAnchor
+                    .constraint(
+                        equalTo: view.leadingAnchor,
+                        constant: horizontalPadding
+                    ),
+                habitActionsStack.widthAnchor
+                    .constraint(
+                        equalToConstant: habitActionsButtonSize * 2 + habitActionsSpacing
+                    ),
+                habitActionsStack.heightAnchor
+                    .constraint(equalToConstant: habitActionsButtonSize),
             
-            graph.topAnchor
-                .constraint(
-                    equalTo: habitActionsStack.bottomAnchor,
-                    constant: 20
-                ),
-            graph.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            graph.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            graph.heightAnchor
-                .constraint(equalToConstant: HabitGraphUI.graphPartHeight),
+                graph.topAnchor
+                    .constraint(
+                        equalTo: habitActionsStack.bottomAnchor,
+                        constant: 20
+                    ),
+                graph.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                graph.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                graph.heightAnchor
+                    .constraint(equalToConstant: HabitGraphUI.graphPartHeight),
             
-            trackTodayButton.topAnchor
-                .constraint(equalTo: graph.bottomAnchor, constant: 20),
-            trackTodayButton.leadingAnchor
-                .constraint(
-                    equalTo: view.leadingAnchor,
-                    constant: horizontalPadding
-                ),
-            trackTodayButton.trailingAnchor
-                .constraint(
-                    equalTo: view.trailingAnchor,
-                    constant: -horizontalPadding
-                ),
-            trackTodayButton.heightAnchor.constraint(equalToConstant: 50),
+                trackTodayButton.topAnchor
+                    .constraint(equalTo: graph.bottomAnchor, constant: 20),
+                trackTodayButton.leadingAnchor
+                    .constraint(
+                        equalTo: view.leadingAnchor,
+                        constant: horizontalPadding
+                    ),
+                trackTodayButton.trailingAnchor
+                    .constraint(
+                        equalTo: view.trailingAnchor,
+                        constant: -horizontalPadding
+                    ),
+                trackTodayButton.heightAnchor.constraint(equalToConstant: 50),
             
-            editButton.widthAnchor
-                .constraint(equalToConstant: habitActionsButtonSize),
-            deleteHabitButton.widthAnchor
-                .constraint(equalToConstant: habitActionsButtonSize)
-]
+                trackSomeDateButton.topAnchor
+                    .constraint(
+                        equalTo: trackTodayButton.bottomAnchor,
+                        constant: 20
+                    ),
+                trackSomeDateButton.leadingAnchor
+                    .constraint(equalTo: trackTodayButton.leadingAnchor),
+                trackSomeDateButton.trailingAnchor
+                    .constraint(equalTo: trackTodayButton.trailingAnchor),
+                trackSomeDateButton.heightAnchor
+                    .constraint(equalToConstant: 50),
+            
+                editButton.widthAnchor
+                    .constraint(equalToConstant: habitActionsButtonSize),
+                deleteHabitButton.widthAnchor
+                    .constraint(equalToConstant: habitActionsButtonSize)
+            ]
         )
     }
     
@@ -130,6 +145,11 @@ class HabbitVC: UIViewController {
             self?.editHabit()
         }
         editButton.addAction(editAction, for: .touchUpInside)
+        
+        let trackSomeDaysConfiguratino = UIAction { [weak self] _ in
+            self?.trackMultipleDates()
+        }
+        trackSomeDateButton.addAction(trackSomeDaysConfiguratino, for: .touchUpInside)
     }
     
     private func stylize() {
@@ -142,6 +162,13 @@ class HabbitVC: UIViewController {
         trackBtnConfiguration.baseBackgroundColor = .systemBlue
         trackBtnConfiguration.baseForegroundColor = .white
         trackTodayButton.configuration = trackBtnConfiguration
+        
+        var trackSomeDateConfiguration = UIButton.Configuration.bordered()
+        trackSomeDateConfiguration.image = UIImage(systemName: "calendar")
+        trackSomeDateConfiguration.title = "Track Multiple dates"
+        trackSomeDateConfiguration.baseBackgroundColor = .systemBlue
+        trackSomeDateConfiguration.baseForegroundColor = .white
+        trackSomeDateButton.configuration = trackSomeDateConfiguration
         
         var deleteBtnConfiguration = UIButton.Configuration.bordered()
         deleteBtnConfiguration.baseForegroundColor = .systemRed
@@ -173,10 +200,10 @@ class HabbitVC: UIViewController {
     
     @MainActor
     private func onHabitUpdate(newHabit: HabitEntity) {
-       habit = newHabit
-       graph.set(habit: newHabit)
-       graph.collectionView.reloadData()
-       navigationItem.title = newHabit.name
+        habit = newHabit
+        graph.set(habit: newHabit)
+        graph.collectionView.reloadData()
+        navigationItem.title = newHabit.name
     }
     
     private func refetchHabit() {
@@ -232,5 +259,20 @@ class HabbitVC: UIViewController {
         Task {
             await AppContainer.habitsInteractor.remove(habit: habit)
         }    
+    }
+    
+    private func trackMultipleDates() {
+        let cal = HabitCalendar(previousDates: habit.trackedDays.map { $0.date } )
+        let vc = UIHostingController(rootView: cal)
+        vc.modalPresentationStyle = .pageSheet
+        vc.preferredContentSize = CGSize(width: 200, height: 200)
+        
+        
+        if let sheet = vc.presentationController as? UISheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        
+        present(vc, animated: true)
     }
 }
